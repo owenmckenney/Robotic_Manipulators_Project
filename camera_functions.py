@@ -5,7 +5,6 @@
 import cv2
 import numpy as np
 import mediapipe as mp
-from cvzone.HandTrackingModule import HandDetector 
 
 class Camera:
     def __init__(self, usb_port):
@@ -14,8 +13,6 @@ class Camera:
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(min_detection_confidence=0.75, min_tracking_confidence=0.75)
         self.mp_draw = mp.solutions.drawing_utils
-
-        self.hand_detector = HandDetector(maxHands=1, detectionCon=0.8)
 
     def quit(self):
         self.cap.release()
@@ -132,7 +129,7 @@ if __name__ == "__main__":
         camera.get_frame()
         poses = camera.detect_cubes(output=False)
         fingers = camera.detect_hand(output=True)
-        
+
         cv2.imshow("cube detect", camera.frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
