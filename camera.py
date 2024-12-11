@@ -64,27 +64,22 @@ class Camera:
 
                 angle_rad = np.deg2rad(angle)
 
-                # quaternion representation (rotation only about the Z-axis)
-                qw = np.cos(angle_rad / 2)
-                qx = 0
-                qy = 0
-                qz = np.sin(angle_rad / 2)
-
                 cube_poses.append({
                     "centroid": (cx, cy),
-                    "quaternion": (qw, qx, qy, qz)
+                    "angle": angle_rad
                 })
 
         # print all cube poses
         if output:
             for i, pose in enumerate(cube_poses):
                 centroid = pose["centroid"]
-                quaternion = pose["quaternion"]
-                print(f"Cube {i + 1}: Centroid={centroid}, Quaternion={quaternion}")
+                angle = pose["angle"]
+                print(f"Cube {i + 1}: Centroid={centroid}, Angle={angle}")
 
         return cube_poses
     
     # should be called on every loop run
+    # gathered from https://github.com/Sousannah/hand-tracking-using-mediapipe
     def detect_hand(self, output=False):
         tip_ids = [4, 8, 12, 16, 20]
 
@@ -119,6 +114,13 @@ class Camera:
                 return total_fingers
             
             return 0
+        
+    def show_frame(self):
+        cv2.imshow("Frame", self.frame)
+
+    def detect_close(self):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            return True
 
 
 if __name__ == "__main__":
