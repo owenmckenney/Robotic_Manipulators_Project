@@ -25,10 +25,12 @@ class Camera:
     # should be called on every loop run
     def detect_cubes(self, output=False):
         hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
+        
+        cv2.imshow("", hsv)
 
         # range for color in hsv (currently green)
-        lower_green = np.array([40, 40, 40])
-        upper_green = np.array([80, 255, 255])
+        lower_green = np.array([90, 130, 100])
+        upper_green = np.array([140, 255, 255])
 
         # create a mask for the color
         mask = cv2.inRange(hsv, lower_green, upper_green)
@@ -82,8 +84,9 @@ class Camera:
     # gathered from https://github.com/Sousannah/hand-tracking-using-mediapipe
     def detect_hand(self, output=False):
         tip_ids = [4, 8, 12, 16, 20]
+        palm_ids = [0, 1, 5, 9, 13, 17]  # Landmark points around the palm
 
-        self.frame = cv2.flip(self.frame, 1)  
+        self.frame = cv2.flip(self.frame, 1)
         frame_rgb = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
         results = self.hands.process(frame_rgb)
 
@@ -97,23 +100,29 @@ class Camera:
 
                 if lm_list:
                     fingers = []
-
                     for id in range(1, 5):
                         if lm_list[tip_ids[id]][2] < lm_list[tip_ids[id] - 2][2]:
-                            fingers.append(1) 
+                            fingers.append(1)
                         else:
                             fingers.append(0)
 
                     total_fingers = fingers.count(1)
-                    
+
+                    # Calculate center of palm
+                    palm_coords = [(lm_list[id][1], lm_list[id][2]) for id in palm_ids]
+                    palm_center_x = int(sum(x for x, y in palm_coords) / len(palm_coords))
+                    palm_center_y = int(sum(y for x, y in palm_coords) / len(palm_coords))
+                    palm_center = (palm_center_x, palm_center_y)
+
                     if output:
-                        print(f"Fingers up: {total_fingers}")
+                        print(f"Fingers up: {total_fingers}, Palm center: {palm_center}")
 
-                self.mp_draw.draw_landmarks(self.frame, hand_lms, self.mp_hands.HAND_CONNECTIONS)
+                    self.mp_draw.draw_landmarks(self.frame, hand_lms, self.mp_hands.HAND_CONNECTIONS)
 
-                return total_fingers
-            
-            return 0
+                    return total_fingers, palm_center
+
+        return 0, None
+
         
     def show_frame(self):
         cv2.imshow("Frame", self.frame)
@@ -129,8 +138,11 @@ if __name__ == "__main__":
 
     while True:
         camera.get_frame()
-        poses = camera.detect_cubes(output=False)
+        # poses = camera.detect_cubes(output=False)
+        poses = camera.detect_cubes()
         fingers = camera.detect_hand(output=True)
+        
+        print(poses)
 
         cv2.imshow("cube detect", camera.frame)
 

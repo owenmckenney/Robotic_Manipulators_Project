@@ -54,7 +54,7 @@ class UR5SafeControl:
         self.rtde_receive.disconnect()
 
 if __name__ == "__main__":
-    ip = "10.168.18.104"
+    ip = "10.168.18.105"
 
     x_min = 0.2 
     x_max = 0.8  
