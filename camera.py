@@ -13,6 +13,8 @@ class Camera:
         self.mp_hands = mp.solutions.hands
         self.hands = self.mp_hands.Hands(min_detection_confidence=0.75, min_tracking_confidence=0.75)
         self.mp_draw = mp.solutions.drawing_utils
+        
+        self.last_hand_pos = [0,0]
 
     def quit(self):
         self.cap.release()
@@ -25,12 +27,10 @@ class Camera:
     # should be called on every loop run
     def detect_cubes(self, output=False):
         hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-        
-        cv2.imshow("", hsv)
-
+    
         # range for color in hsv (currently green)
-        lower_green = np.array([90, 130, 100])
-        upper_green = np.array([140, 255, 255])
+        lower_green = np.array([40, 40, 40])
+        upper_green = np.array([80, 255, 255])
 
         # create a mask for the color
         mask = cv2.inRange(hsv, lower_green, upper_green)
@@ -67,7 +67,7 @@ class Camera:
                 angle_rad = np.deg2rad(angle)
 
                 cube_poses.append({
-                    "centroid": (cx, cy),
+                    "centroid": (640 - cx, cy),
                     "angle": angle_rad
                 })
 
@@ -77,7 +77,6 @@ class Camera:
                 centroid = pose["centroid"]
                 angle = pose["angle"]
                 print(f"Cube {i + 1}: Centroid={centroid}, Angle={angle}")
-
         return cube_poses
     
     # should be called on every loop run
@@ -118,10 +117,11 @@ class Camera:
                         print(f"Fingers up: {total_fingers}, Palm center: {palm_center}")
 
                     self.mp_draw.draw_landmarks(self.frame, hand_lms, self.mp_hands.HAND_CONNECTIONS)
+                    self.last_hand_pos = palm_center
 
                     return total_fingers, palm_center
 
-        return 0, None
+        return 0, self.last_hand_pos
 
         
     def show_frame(self):

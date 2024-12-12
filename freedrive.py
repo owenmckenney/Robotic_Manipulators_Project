@@ -2,7 +2,7 @@ import socket
 import time
 
 # Define UR5 IP and port
-ip = "10.168.18.106"  # Replace with your robot's IP address
+ip = "10.168.18.56"  # Replace with your robot's IP address
 port = 30002           # Port for URScript commands
 
 # Establish socket connection
